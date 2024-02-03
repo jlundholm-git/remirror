@@ -268,6 +268,11 @@ export type LinkAttributes = ProsemirrorAttributes<{
    * The target for the link..
    */
   target?: LinkTarget;
+
+  /**
+   * Optional font size
+ */
+  fontSize?: string;
 }>;
 
 @extension<LinkOptions>({
@@ -354,17 +359,24 @@ export class LinkExtension extends MarkExtension<LinkOptions> {
         ...(override.parseDOM ?? []),
       ],
       toDOM: (node) => {
-        const { auto: _, target: __, ...rest } = omitExtraAttributes(node.attrs, extra);
+        const { auto: _, target: __, fontSize, ...rest } = omitExtraAttributes(node.attrs, extra);
         const auto = node.attrs.auto ? { [AUTO_ATTRIBUTE]: '' } : {};
         const rel = 'noopener noreferrer nofollow';
+      
+        let style = '';
+        if (fontSize) {
+          style += `font-size: ${fontSize};`;
+        }
+      
         const attrs = {
           ...extra.dom(node),
           ...rest,
           rel,
           ...auto,
           ...getTargetObject(node.attrs.target),
+          style, // Apply the constructed style string
         };
-
+      
         return ['a', attrs, 0];
       },
     };
